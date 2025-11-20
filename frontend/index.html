@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>DormMate</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+
+    <body>
+        <header class = "navbar">
+            <div class = "navbar-left">
+                <h1>DormMate</h1>
+            </div>
+
+            <nav class = "navbar-center">
+                <a href="#" class="nav-link active" data-target="dashboard-section">Dashboard</a>
+                <a href="#" class="nav-link" data-target="add-task-section">Add task</a>
+                <a href="#" class="nav-link" data-target="roommates-section">Roommates</a>
+                <a href="#" class="nav-link" data-target="map-section">Map</a>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Dashboard -->
+            <section id="dashboard-section" class="active-section">
+                <!-- statistics -->
+                <section class="stats-cards">
+                    <div class="card">
+                        <div class="card-content">
+                            Upcoming tasks
+                            <span>7</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class ="card-content">
+                            Overdue tasks
+                            <span>3</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-content">
+                            Completed this week
+                            <span>5</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- filters -->
+                <section class ="filters">
+                    <div class="search-bar">
+                        <input id="search-bar" type="text" placeholder="Search tasks..." />
+                    </div>
+                    <div class="filter-row">
+                        <div class="filter">
+                            <label>Filter by roommate:</label>
+                            <select id="roommate-filter">
+                                <option>All roommates</option>
+                                <!-- filled with js -->
+                            </select>
+                        </div>
+
+                        <div class="filter">
+                            <label>Filter by priority:</label>
+                            <select id="filter-priorities">
+                                <option value="all">All priorities</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>  
+                        </div>  
+                        
+                        <div class="filter">
+                            <label>Filter by status</label>
+                                <button class="active" id ="status-all">All</button>
+                                <button id="status-pending">Pending</button>
+                                <button id="status-done">Done</button>
+                        </div>
+
+                        <div class="sort-row">
+                            <label class="sort-text">Sort by priority:</label>
+                            <select id="sort-priority">
+                                <option value="low-high">Low to high</option>
+                                <option value="high-low">High to low</option>
+                            </select>
+
+                            <label class="sort-text">Sort by due date:</label>
+                            <select id="sort-due-date">
+                                <option value="near-far">New-Old</option>
+                                <option value="far-near">Old-New</option>
+                            </select>
+                        </div>
+                
+                    </div>
+                </section>
+
+                <!-- task table -->
+                
+                <section class="task-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Task title</th>
+                                <th>Assigned to</th>
+                                <th>Priority</th>
+                                <th>Due date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-table-body">
+                            <!-- filled from the backend -->
+                        </tbody>
+                    </table>
+                </section>
+            </section>
+
+
+            <section id="add-task-section" class="hidden-section">
+                <!-- add tasks -->
+                <section class="add-task">
+                    <h2>Add a task</h2>
+                    <form id="add-task-form">
+                        <div class="form-group">
+                            <label for="task-title">Task Title:</label>
+                            <input type="text" id="task-title" name="title" placeholder="e.g: Do the dishes" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-desc">Description</label>
+                            <textarea id="task-desc" name="description" placeholder="Add details about the task..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-roommate">Assign to:</label>
+                            <select id="task-roommate" name="roommate_id">
+                                <option value="">Select a roommate</option>
+                                <!-- filled from the backend -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-priority">Priority:</label>
+                            <select id="task-priority" name="priority" required>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-due">Due Date:</label>
+                            <input type="date" id="task-due" name="due_date" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-location">Location:</label>
+                            <input type="text" id="task-location" name="location" placeholder="e.g: Kitchen..."/>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Add Task</button>
+                    </form>
+
+                </section>
+            </section>
+
+            <!-- roommates section -->
+            <section id="roommates-section" class="hidden-section">
+                <h2>Roommates</h2>
+                
+                <form id="add-roommate-form" class="add-roommate-form">
+                    <input type="text" id="roommate-name" name="name" placeholder="Roommate name" required />
+                    <button type="submit" class="btn-submit">Add Roommate</button>
+                </form>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roommate-table-body">
+                        <!-- filled from the backend -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Map section -->
+            <section id="map-section" class="hidden-section">
+                <h2>Map</h2>
+                <div class="map-container">
+                    <!-- from the backend -->
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 DormMate. All rights reserved.</p>
+        </footer>
+
+        <script src="main.js"></script>
+    </body>
+</html>
