@@ -142,6 +142,50 @@ def create_roommate():
         conn.close()
 
     return jsonify({'message': 'Roommate created successfully'}), 201
+
+# --- UPDATE ROOMMATE (Fix typos or change email) ---
+@main.route('/roommates/<int:roommate_id>', methods=['PUT'])
+def update_roommate(roommate_id):
+    """
+    Update a roommate's details.
+    """
+    data = request.get_json()
+    conn = get_db()
+    
+    # We update both name and email if provided
+    # COALESCE isn't strictly needed if frontend sends all data, 
+    # but strictly speaking, we overwrite with what is sent.
+    try:
+        conn.execute('''
+            UPDATE roommates 
+            SET name = ?, email = ?
+            WHERE id = ?
+        ''', (data['name'], data['email'], roommate_id))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # Prevents changing an email to one that already exists
+        return jsonify({'error': 'Email already in use'}), 400
+    finally:
+        conn.close()
+
+    return jsonify({"message": "Roommate updated successfully"}), 200
+
+
+# --- DELETE ROOMMATE (Moving out) ---
+@main.route('/roommates/<int:roommate_id>', methods=['DELETE'])
+def delete_roommate(roommate_id):
+    """
+    Remove a roommate.
+    WARNING: Tasks assigned to this person will remain but unassigned 
+    (or link to a non-existent ID depending on DB strictness).
+    """
+    conn = get_db()
+    
+    conn.execute('UPDATE tasks SET roommate_id = NULL WHERE roommate_id = ?', (roommate_id,))  # Set to NULL before deleting
+    conn.execute('DELETE FROM roommates WHERE id = ?', (roommate_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Roommate deleted"}), 200
     
 
 # Upcoming tasks

@@ -10,6 +10,6 @@ def create_app():
     #import and register the routes blueprint
 
     from .routes import main
-    app.register_blueprt(main)
+    app.register_blueprint(main)
 
     return app

@@ -3,17 +3,17 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>DormMate</title>
+        <title>DormMate - Task Manager</title>
         <link rel="stylesheet" href="styles.css" />
     </head>
 
     <body>
-        <header class = "navbar">
-            <div class = "navbar-left">
+        <header class="navbar">
+            <div class="navbar-left">
                 <h1>DormMate</h1>
             </div>
 
-            <nav class = "navbar-center">
+            <nav class="navbar-center">
                 <a href="#" class="nav-link active" data-target="dashboard-section">Dashboard</a>
                 <a href="#" class="nav-link" data-target="add-task-section">Add task</a>
                 <a href="#" class="nav-link" data-target="roommates-section">Roommates</a>
@@ -22,44 +22,42 @@
         </header>
 
         <main>
-            <!-- Dashboard -->
             <section id="dashboard-section" class="active-section">
-                <!-- statistics -->
+                
                 <section class="stats-cards">
                     <div class="card">
                         <div class="card-content">
                             Upcoming tasks
-                            <span>7</span>
+                            <span id="stat-upcoming">0</span>
                         </div>
                     </div>
 
                     <div class="card">
-                        <div class ="card-content">
+                        <div class="card-content">
                             Overdue tasks
-                            <span>3</span>
+                            <span id="stat-overdue">0</span>
                         </div>
                     </div>
 
                     <div class="card">
                         <div class="card-content">
                             Completed this week
-                            <span>5</span>
+                            <span id="stat-completed">0</span>
                         </div>
                     </div>
                 </section>
 
-                <!-- filters -->
-                <section class ="filters">
+                <section class="filters">
                     <div class="search-bar">
                         <input id="search-bar" type="text" placeholder="Search tasks..." />
                     </div>
+                    
                     <div class="filter-row">
                         <div class="filter">
                             <label>Filter by roommate:</label>
                             <select id="roommate-filter">
-                                <option>All roommates</option>
-                                <!-- filled with js -->
-                            </select>
+                                <option value="all">All roommates</option>
+                                </select>
                         </div>
 
                         <div class="filter">
@@ -73,10 +71,12 @@
                         </div>  
                         
                         <div class="filter">
-                            <label>Filter by status</label>
-                                <button class="active" id ="status-all">All</button>
+                            <label>Filter by status:</label>
+                            <div class="status-buttons">
+                                <button class="active" id="status-all">All</button>
                                 <button id="status-pending">Pending</button>
                                 <button id="status-done">Done</button>
+                            </div>
                         </div>
 
                         <div class="sort-row">
@@ -92,53 +92,55 @@
                                 <option value="far-near">Old-New</option>
                             </select>
                         </div>
-                
                     </div>
                 </section>
 
-                <!-- task table -->
-                
                 <section class="task-table">
                     <table>
                         <thead>
                             <tr>
                                 <th>Status</th>
                                 <th>Task title</th>
-                                <th>Assigned to</th>
+                                <th>Location</th> <th>Assigned to</th>
                                 <th>Priority</th>
                                 <th>Due date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="task-table-body">
-                            <!-- filled from the backend -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </section>
             </section>
 
 
             <section id="add-task-section" class="hidden-section">
-                <!-- add tasks -->
                 <section class="add-task">
-                    <h2>Add a task</h2>
+                    <h2>Add a New Task</h2>
                     <form id="add-task-form">
+                        
                         <div class="form-group">
                             <label for="task-title">Task Title:</label>
-                            <input type="text" id="task-title" name="title" placeholder="e.g: Do the dishes" required />
+                            <input type="text" id="task-title" name="title" placeholder="e.g: Clean the fridge" required />
                         </div>
 
                         <div class="form-group">
-                            <label for="task-desc">Description</label>
-                            <textarea id="task-desc" name="description" placeholder="Add details about the task..." required></textarea>
+                            <label for="task-desc">Description:</label>
+                            <textarea id="task-desc" name="description" placeholder="Details..." required></textarea>
                         </div>
 
                         <div class="form-group">
                             <label for="task-roommate">Assign to:</label>
                             <select id="task-roommate" name="roommate_id">
                                 <option value="">Select a roommate</option>
-                                <!-- filled from the backend -->
-                            </select>
+                                </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="task-room-id">Location (Room):</label>
+                            <select id="task-room-id" name="room_id" required>
+                                <option value="">Select a room</option>
+                                </select>
                         </div>
 
                         <div class="form-group">
@@ -155,50 +157,46 @@
                             <input type="date" id="task-due" name="due_date" required />
                         </div>
 
-                        <div class="form-group">
-                            <label for="task-location">Location:</label>
-                            <input type="text" id="task-location" name="location" placeholder="e.g: Kitchen..."/>
-                        </div>
-
-                        <button type="submit" class="btn-submit">Add Task</button>
+                        <button type="submit" class="btn-submit">Create Task</button>
                     </form>
-
                 </section>
             </section>
 
-            <!-- roommates section -->
             <section id="roommates-section" class="hidden-section">
-                <h2>Roommates</h2>
+                <h2>Manage Roommates</h2>
                 
                 <form id="add-roommate-form" class="add-roommate-form">
-                    <input type="text" id="roommate-name" name="name" placeholder="Roommate name" required />
-                    <button type="submit" class="btn-submit">Add Roommate</button>
+                    <div class="form-group-row">
+                        <input type="text" id="roommate-name" name="name" placeholder="Name" required />
+                        <input type="email" id="roommate-email" name="email" placeholder="Email (for reminders)" required />
+                        <button type="submit" class="btn-submit">Add</button>
+                    </div>
                 </form>
                 
                 <table>
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th>Email</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="roommate-table-body">
-                        <!-- filled from the backend -->
-                    </tbody>
+                        </tbody>
                 </table>
             </section>
 
-            <!-- Map section -->
             <section id="map-section" class="hidden-section">
-                <h2>Map</h2>
-                <div class="map-container">
-                    <!-- from the backend -->
-                </div>
+                <h2>House Map Overview</h2>
+                <p>Tasks per room are shown in the bubbles.</p>
+                
+                <div id="house-map" class="map-container">
+                    </div>
             </section>
         </main>
 
         <footer>
-            <p>&copy; 2025 DormMate. All rights reserved.</p>
+            <p>&copy; 2026 DormMate. All rights reserved.</p>
         </footer>
 
         <script src="main.js"></script>
