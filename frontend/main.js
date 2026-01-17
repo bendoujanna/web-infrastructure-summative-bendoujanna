@@ -1,8 +1,45 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Section switching
+    
+    // --- API CONFIGURATION ---
+    const API_URL = "http://127.0.0.1:5000";
+
+    // --- DOM ELEMENTS ---
+    // Section Switching
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('main > section');
 
+    // Filters & Sorts
+    const roommateFilter = document.getElementById('roommate-filter');
+    // Correction: In your HTML the ID is 'filter-priorities'
+    const priorityFilter = document.getElementById('filter-priorities'); 
+    const searchBar = document.getElementById('search-bar');
+    const statusButtons = {
+        all: document.getElementById('status-all'),
+        pending: document.getElementById('status-pending'),
+        done: document.getElementById('status-done')
+    };
+    const sortPriority = document.getElementById('sort-priority');
+    const sortDueDate = document.getElementById('sort-due-date');
+
+    // Tables & Map
+    const taskTableBody = document.getElementById('task-table-body');
+    const roommateTableBody = document.getElementById('roommate-table-body');
+    const mapContainer = document.getElementById('house-map');
+
+    // Forms
+    const taskRoommateSelect = document.getElementById('task-roommate');
+    const taskRoomSelect = document.getElementById('task-room-id'); // For Location
+
+    // --- STATE MANAGEMENT ---
+    let tasks = [];
+    let roommates = [];
+    let rooms = []; // For map
+    
+    let currentFilters = {status: 'all', priority: 'all', roommate: 'all', search: ''};
+    let currentSort = {priority: 'low-high', dueDate: 'near-far'};
+
+
+    // --- 1. NAVIGATION LOGIC ---
     navLinks.forEach(link => {
         link.addEventListener('click', e => {
             e.preventDefault();
@@ -22,62 +59,91 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // DOM elements
-    const taskTableBody = document.getElementById('task-table-body');
-    const roommateFilter = document.getElementById('roommate-filter');
-    const priorityFilter = document.getElementById('priority-filter');
-    const searchBar = document.getElementById('search-bar');
-    const statusButtons = {
-        all: document.getElementById('status-all'),
-        pending: document.getElementById('status-pending'),
-        done: document.getElementById('status-done')
-    };
-    const sortPriority = document.getElementById('sort-priority');
-    const sortDueDate = document.getElementById('sort-due-date');
 
-    let tasks = [];
-    let roommates = [];
-    let currentFilters = {status: 'all', priority: 'all', roommate: 'all', search: ''};
-    let currentSort = {priority: 'low-high', dueDate: 'near-far'};
+    // --- 2. FETCHING DATA (GET) ---
 
-    // Fetch tasks and roommates
+    async function fetchAllData() {
+        await Promise.all([fetchRooms(), fetchRoommates(), fetchTasks()]);
+        // We render the map last to ensure we have tasks count available
+        renderMap(); 
+    }
+
+    // A. Fetch Rooms (For Map & Dropdown)
+    async function fetchRooms() {
+        try {
+            const res = await fetch(`${API_URL}/rooms`); 
+
+            if(res.ok) {
+                rooms = await res.json();
+                populateRoomDropdown();
+            }
+        } catch (error) {
+            console.error("Error fetching rooms:", error);
+        }
+    }
+
+    // B. Fetch Roommates
+    async function fetchRoommates() {
+        const res = await fetch(`${API_URL}/roommates`);
+        roommates = await res.json();
+        
+        populateRoommateDropdowns();
+        renderRoommateTable();
+    }
+
+    // C. Fetch Tasks
     async function fetchTasks() {
-        const res = await fetch('http://127.0.0.1:5000/tasks');
+        // We use the "Upcoming" or "Overdue" routes for dashboards, 
+        // but for the main table, we want ALL tasks.
+        const res = await fetch(`${API_URL}/tasks`); // Or /tasks/upcoming based on view
         tasks = await res.json();
         renderTasks();
+        renderMap(); // Re-render map to update counters
     }
 
-    async function fetchRoommates() {
-        const res = await fetch('http://127.0.0.1:5000/roommates');
-        roommates = await res.json();
 
-        // Fill filters
+    // --- 3. RENDERING UI ---
+
+    // A. Populate Select Menus
+    function populateRoomDropdown() {
+        // Clear existing (except first option)
+        taskRoomSelect.innerHTML = '<option value="">Select a room</option>';
+        rooms.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room.id;
+            option.textContent = room.name;
+            taskRoomSelect.appendChild(option);
+        });
+    }
+
+    function populateRoommateDropdowns() {
+        // Filter dropdown
         roommateFilter.innerHTML = '<option value="all">All roommates</option>';
-        roommates.forEach(r => {
-            const option = document.createElement('option');
-            option.value = r.id;
-            option.textContent = r.name;
-            roommateFilter.appendChild(option);
-        });
-
-        // Fill add-task select
-        const taskRoommateSelect = document.getElementById('task-roommate');
+        // Form dropdown
         taskRoommateSelect.innerHTML = '<option value="">Select a roommate</option>';
+
         roommates.forEach(r => {
-            const option = document.createElement('option');
-            option.value = r.id;
-            option.textContent = r.name;
-            taskRoommateSelect.appendChild(option);
+            // Filter
+            const opt1 = document.createElement('option');
+            opt1.value = r.id;
+            opt1.textContent = r.name;
+            roommateFilter.appendChild(opt1);
+
+            // Form
+            const opt2 = document.createElement('option');
+            opt2.value = r.id;
+            opt2.textContent = r.name;
+            taskRoommateSelect.appendChild(opt2);
         });
     }
 
+    // B. Render Task Table
     function renderTasks() {
         let filtered = [...tasks];
 
-        // Apply filters
+        // Apply Filters
         filtered = filtered.filter(t => {
             let match = true;
-
             if (currentFilters.status !== 'all') {
                 match = match && (currentFilters.status === 'done' ? t.status === 'done' : t.status !== 'done');
             }
@@ -93,93 +159,201 @@ document.addEventListener('DOMContentLoaded', () => {
             return match;
         });
 
-        // Apply sorting
+        // Apply Sorting
         filtered.sort((a, b) => {
-            // Priority sort
             const priorityOrder = {Low: 1, Medium: 2, High: 3};
-            if (sortPriority.value === 'low-high') {
-                return priorityOrder[a.priority] - priorityOrder[b.priority];
-            } else if (sortPriority.value === 'high-low') {
-                return priorityOrder[b.priority] - priorityOrder[a.priority];
-            }
+            if (currentSort.priority === 'low-high') return priorityOrder[a.priority] - priorityOrder[b.priority];
+            if (currentSort.priority === 'high-low') return priorityOrder[b.priority] - priorityOrder[a.priority];
             return 0;
         });
 
-        // Due date sort
         filtered.sort((a, b) => {
             const dateA = new Date(a.due_date);
             const dateB = new Date(b.due_date);
-            if (sortDueDate.value === 'near-far') return dateA - dateB;
+            if (currentSort.dueDate === 'near-far') return dateA - dateB;
             else return dateB - dateA;
         });
 
-        // Render
+        // Generate HTML
         taskTableBody.innerHTML = '';
         filtered.forEach(t => {
             const row = document.createElement('tr');
+            
+            // Find Room Name & Roommate Name helper
+            const rName = roommates.find(r => r.id == t.roommate_id)?.name || 'Unassigned';
+            // If backend sends room_name (via JOIN) use it, otherwise find in rooms array
+            const roomName = t.room_name || rooms.find(r => r.id == t.room_id)?.name || 'Unknown';
+
             row.innerHTML = `
-                <td>${t.status === 'done' ? 'Done' : 'Pending'}</td>
+                <td><span class="status-badge ${t.status}">${t.status}</span></td>
                 <td>${t.title}</td>
-                <td>${getRoommateName(t.roommate_id)}</td>
+                <td>${roomName}</td> <td>${rName}</td>
                 <td>${t.priority}</td>
                 <td>${t.due_date}</td>
                 <td>
-                    ${t.status !== 'done' ? `<button class="mark-done-btn" data-id="${t.id}">Mark Done</button>` : ''}
-                    <button class="delete-btn" data-id="${t.id}">Delete</button>
+                    ${t.status !== 'done' ? `<button class="btn-action btn-done" data-id="${t.id}">Done</button>` : ''}
+                    <button class="btn-action btn-delete" data-id="${t.id}">Delete</button>
                 </td>
             `;
             taskTableBody.appendChild(row);
         });
 
-        attachRowEvents();
+        attachTaskEvents();
+        updateStats(filtered); // Update dashboard numbers
     }
 
-    function getRoommateName(id) {
-        const r = roommates.find(r => r.id == id);
-        return r ? r.name : '';
+    // C. Render Roommate Table
+    function renderRoommateTable() {
+        roommateTableBody.innerHTML = '';
+        roommates.forEach(r => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${r.name}</td>
+                <td>${r.email}</td>
+                <td>
+                    <button class="btn-action btn-delete-roommate" data-id="${r.id}">Remove</button>
+                </td>
+            `;
+            roommateTableBody.appendChild(row);
+        });
+        
+        // Attach delete event for roommates
+        document.querySelectorAll('.btn-delete-roommate').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if(confirm('Remove this roommate? Tasks will remain unassigned.')) {
+                    await fetch(`${API_URL}/roommates/${btn.dataset.id}`, {method: 'DELETE'});
+                    fetchRoommates(); // Refresh list
+                }
+            });
+        });
     }
 
-    function attachRowEvents() {
-        // Mark done
-        document.querySelectorAll('.mark-done-btn').forEach(btn => {
+    // D. Render Map (The Bubbles!)
+    function renderMap() {
+        mapContainer.innerHTML = ''; // Clear map
+        
+        rooms.forEach(room => {
+            // Count pending tasks for this room
+            const taskCount = tasks.filter(t => t.room_id === room.id && t.status !== 'done').length;
+
+            // Create Bubble
+            const bubble = document.createElement('div');
+            bubble.className = `room-marker marker-${room.color}`;
+            
+            // Positioning (from DB coordinates)
+            bubble.style.left = `${room.pos_x}px`;
+            bubble.style.top = `${room.pos_y}px`;
+
+            // Content
+            bubble.innerHTML = `
+                <span>${room.name}</span>
+                ${taskCount > 0 ? `<div class="task-count-badge">${taskCount}</div>` : ''}
+            `;
+
+            mapContainer.appendChild(bubble);
+        });
+    }
+
+    function updateStats(currentTasks) {
+        // Upcoming (pending), Overdue, Completed
+        const now = new Date();
+        
+        const upcoming = tasks.filter(t => t.status !== 'done' && new Date(t.due_date) >= now).length;
+        const overdue = tasks.filter(t => t.status !== 'done' && new Date(t.due_date) < now).length;
+        // Completed logic would require filtering by date range, simplified here:
+        const completed = tasks.filter(t => t.status === 'done').length; 
+
+        document.getElementById('stat-upcoming').innerText = upcoming;
+        document.getElementById('stat-overdue').innerText = overdue;
+        document.getElementById('stat-completed').innerText = completed;
+    }
+
+
+    // --- 4. FORM HANDLING (POST) ---
+
+    // Add Task
+    document.getElementById('add-task-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = {
+            title: document.getElementById('task-title').value,
+            description: document.getElementById('task-desc').value,
+            roommate_id: document.getElementById('task-roommate').value,
+            room_id: document.getElementById('task-room-id').value, // Send Room ID
+            priority: document.getElementById('task-priority').value,
+            due_date: document.getElementById('task-due').value,
+        };
+
+        await fetch(`${API_URL}/tasks`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        e.target.reset();
+        fetchTasks(); // Reload data
+        alert("Task created!");
+    });
+
+    // Add Roommate
+    document.getElementById('add-roommate-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('roommate-name').value,
+            email: document.getElementById('roommate-email').value // Send Email
+        };
+
+        const res = await fetch(`${API_URL}/roommates`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            e.target.reset();
+            fetchRoommates();
+            alert("Roommate added!");
+        } else {
+            const err = await res.json();
+            alert("Error: " + err.error);
+        }
+    });
+
+
+    // --- 5. EVENTS & FILTERS ---
+
+    function attachTaskEvents() {
+        // Mark Done
+        document.querySelectorAll('.btn-done').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const taskId = btn.dataset.id;
-                await fetch(`http://127.0.0.1:5000/tasks/${taskId}`, {
+                await fetch(`${API_URL}/tasks/${taskId}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({status: 'done'})
                 });
-                await fetchTasks();
+                fetchTasks();
             });
         });
 
-        // Delete
-        document.querySelectorAll('.delete-btn').forEach(btn => {
+        // Delete Task
+        document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async () => {
-                const taskId = btn.dataset.id;
-                await fetch(`http://127.0.0.1:5000/tasks/${taskId}`, {method: 'DELETE'});
-                await fetchTasks();
+                if(confirm('Delete this task?')) {
+                    const taskId = btn.dataset.id;
+                    await fetch(`${API_URL}/tasks/${taskId}`, {method: 'DELETE'});
+                    fetchTasks();
+                }
             });
         });
     }
 
-    // Filters event listeners
-    // roommateFilter.addEventListener('change', () => {
-    //     currentFilters.roommate = roommateFilter.value;
-    //     renderTasks();
-    // });
-
+    // Filter Listeners
     if (roommateFilter) {
         roommateFilter.addEventListener('change', () => {
             currentFilters.roommate = roommateFilter.value;
             renderTasks();
         });
     }
-
-    // priorityFilter.addEventListener('change', () => {
-    //     currentFilters.priority = priorityFilter.value;
-    //     renderTasks();
-    // });
 
     if (priorityFilter) {
         priorityFilter.addEventListener('change', () => {
@@ -212,40 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderTasks();
     });
 
-    // Add task form
-    document.getElementById('add-task-form').addEventListener('submit', async e => {
-        e.preventDefault();
-        const data = {
-            title: document.getElementById('task-title').value,
-            description: document.getElementById('task-desc').value,
-            roommate_id: document.getElementById('task-roommate').value,
-            priority: document.getElementById('task-priority').value,
-            due_date: document.getElementById('task-due').value,
-        };
-        await fetch('http://127.0.0.1:5000/tasks', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        e.target.reset();
-        await fetchTasks();
-    });
 
-    // Add roommate form
-    document.getElementById('add-roommate-form').addEventListener('submit', async e => {
-        e.preventDefault();
-        const data = {name: document.getElementById('roommate-name').value};
-        await fetch('http://127.0.0.1:5000/roommates', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        e.target.reset();
-        await fetchRoommates();
-    });
-
-    // Initial fetch
-    fetchRoommates();
-    fetchTasks();
+    // --- INITIALIZE ---
+    fetchAllData();
 });
-
