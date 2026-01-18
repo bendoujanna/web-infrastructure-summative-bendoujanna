@@ -203,30 +203,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // C. Render Roommate Table
-    function renderRoommateTable() {
-        roommateTableBody.innerHTML = '';
-        roommates.forEach(r => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${r.name}</td>
-                <td>${r.email}</td>
-                <td>
-                    <button class="btn-action btn-delete-roommate" data-id="${r.id}">Remove</button>
-                </td>
-            `;
-            roommateTableBody.appendChild(row);
+    // --- MODAL LOGIC ---
+    const modal = document.getElementById('roommate-modal');
+    const btnOpenModal = document.getElementById('btn-open-modal');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const btnCancelModal = document.getElementById('btn-cancel-modal');
+
+    // Open
+    if(btnOpenModal) {
+        btnOpenModal.addEventListener('click', () => {
+            modal.classList.remove('hidden');
         });
+    }
+
+    // Close helpers
+    const closeModal = () => modal.classList.add('hidden');
+    if(btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+    if(btnCancelModal) btnCancelModal.addEventListener('click', closeModal);
+    
+    // Close if clicking outside the white box
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+
+    // --- RENDER ROOMMATES AS CARDS ---
+    const roommatesGrid = document.getElementById('roommates-grid');
+
+    function renderRoommateTable() { // Keeping function name same to avoid breaking other calls
+        roommatesGrid.innerHTML = '';
         
-        // Attach delete event for roommates
-        document.querySelectorAll('.btn-delete-roommate').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if(confirm('Remove this roommate? Tasks will remain unassigned.')) {
+        roommates.forEach(r => {
+            // 1. Get Initials (e.g. "Taylor Brown" -> "TB")
+            const initials = r.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+            
+            // 2. Random Color for Avatar
+            const colors = ['#6c5ce7', '#00b894', '#e17055', '#0984e3', '#fdcb6e'];
+            const color = colors[r.id % colors.length]; // Consistent color based on ID
+
+            // 3. Create Card HTML
+            const card = document.createElement('div');
+            card.className = 'roommate-card';
+            card.innerHTML = `
+                <div class="card-avatar" style="background-color: ${color}">
+                    ${initials}
+                </div>
+                <div class="card-info">
+                    <h4>${r.name}</h4>
+                    <span class="role">Roommate</span> <div class="email">
+                        ✉️ ${r.email}
+                    </div>
+                </div>
+                <button class="btn-delete-card" data-id="${r.id}">&times;</button>
+            `;
+            
+            roommatesGrid.appendChild(card);
+        });
+
+        // Attach Delete Events to the new 'x' buttons
+        document.querySelectorAll('.btn-delete-card').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if(confirm('Remove this roommate?')) {
                     await fetch(`${API_URL}/roommates/${btn.dataset.id}`, {method: 'DELETE'});
-                    fetchRoommates(); // Refresh list
+                    fetchRoommates(); 
                 }
             });
         });
     }
+
+    // --- FORM SUBMISSION (INSIDE MODAL) ---
+    document.getElementById('add-roommate-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        
+        const data = {
+            name: document.getElementById('roommate-name').value,
+            email: document.getElementById('roommate-email').value
+            // Note: We are ignoring 'role' here because the DB doesn't have it yet, 
+            // but the UI looks like the screenshot!
+        };
+
+        const res = await fetch(`${API_URL}/roommates`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            e.target.reset();
+            closeModal(); // Close popup
+            fetchRoommates(); // Refresh grid
+        } else {
+            const err = await res.json();
+            alert("Error: " + err.error);
+        }
+    });
 
     // D. Render Map (The Bubbles!)
     function renderMap() {

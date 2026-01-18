@@ -1,251 +1,588 @@
-/* ------------------------------
-   RESET & BASE
---------------------------------*/
+/* =========================================
+   1. RESET & VARIABLES
+   ========================================= */
+:root {
+    --primary-color: #00A374;       /* DormMate Green */
+    --primary-light: #E5FBF4;       /* Very light green background */
+    --text-dark: #1E1E1E;           /* Main text */
+    --text-grey: #575757;           /* Secondary text */
+    --bg-color: #F6F7F9;            /* Page background */
+    --white: #FFFFFF;
+    --border-color: #D6D6D6;
+    --danger-color: #dc3545;        /* Delete Red */
+    --success-color: #28a745;       /* Success Green */
+    --font-main: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    font-family: "Inter", sans-serif;
-    background-color: #F6F7F9;
-    color: #1E1E1E;
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    color: var(--text-dark);
+    line-height: 1.5;
 }
 
-/* ------------------------------
-   NAVBAR
---------------------------------*/
+/* =========================================
+   2. NAVBAR
+   ========================================= */
 .navbar {
-    width: 100%;
-    background: white;
+    background-color: var(--white);
+    padding: 15px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 30px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
-    z-index: 10;
+    z-index: 100;
 }
 
 .navbar-left h1 {
-    font-size: 24px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
 }
 
 .navbar-center {
     display: flex;
-    gap: 25px;
-    flex-wrap: nowrap;
+    gap: 10px;
 }
 
-.navbar-center .nav-link {
+.nav-link {
     text-decoration: none;
-    color: #575757;
-    padding: 10px 14px;
-    border-radius: 10px;
-    transition: 0.2s;
-    white-space: nowrap;
+    color: var(--text-grey);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
-.navbar-center .nav-link.active,
-.navbar-center .nav-link:hover {
-    background: #E5FBF4;
-    color: #00A374;
+.nav-link:hover, 
+.nav-link.active {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
 }
 
-/* ------------------------------
-   MAIN CONTAINER
---------------------------------*/
+/* =========================================
+   3. LAYOUT & SECTIONS
+   ========================================= */
 main {
-    width: 100%;
-    max-width: 1200px;   /* large mais adapté */
-    margin: 40px auto;
+    max-width: 1200px;
+    margin: 30px auto;
     padding: 0 20px;
 }
 
+/* Tab display logic */
 .hidden-section {
     display: none;
 }
 
 .active-section {
     display: block;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
-/* ------------------------------
-   DASHBOARD CARDS
---------------------------------*/
-
-/* #dashboard-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-#dashboard-section section {
-    width: 100%;
-} */
+h2 {
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    color: var(--text-dark);
+}
 
+/* =========================================
+   4. DASHBOARD - STATS CARDS
+   ========================================= */
 .stats-cards {
-    display: flex;
-    flex-wrap: wrap; 
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
-    width: 100%;
+    margin-bottom: 30px;
 }
 
 .card {
-    flex: 1;
-    min-width: 260px; 
-    background: white;
-    padding: 22px;
-    border-radius: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    background: var(--white);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border: 1px solid rgba(0,0,0,0.03);
 }
 
 .card-content {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-grey);
     font-weight: 600;
 }
 
 .card-content span {
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 2rem;
+    color: var(--text-dark);
+    font-weight: 800;
+    margin-top: 10px;
 }
 
-/* ------------------------------
-   FILTERS BLOCK
---------------------------------*/
+/* =========================================
+   5. DASHBOARD - FILTERS
+   ========================================= */
 .filters {
-    margin-top: 30px;
-    background: white;
-    padding: 24px;
-    border-radius: 14px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    width: 100%;
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    margin-bottom: 30px;
 }
 
 .search-bar input {
     width: 100%;
-    padding: 12px 14px;
-    background: #F0F0F5;
-    border: none;
-    border-radius: 10px;
-    margin-bottom: 22px;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #FAFAFA;
+    margin-bottom: 20px;
+    font-size: 1rem;
 }
 
 .filter-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 25px;
+    align-items: flex-end;
 }
 
-.filter label {
-    font-weight: 600;
-    margin-bottom: 6px;
+.filter label, .sort-row label {
     display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-grey);
 }
 
-.filter select,
-.sort-row select {
-    padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid #D6D6D6;
-    background: white;
+.filter select, .sort-row select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--white);
+    font-size: 0.9rem;
+    min-width: 150px;
 }
 
-/* Status buttons */
-.filter button {
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: 1px solid #D6D6D6;
-    background: white;
+/* Status Buttons Group */
+.status-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.status-buttons button {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    background: var(--white);
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 0.9rem;
+    transition: 0.2s;
 }
 
-.filter button.active {
-    background: #1E1E1E;
-    color: white;
+.status-buttons button.active {
+    background-color: var(--text-dark);
+    color: var(--white);
+    border-color: var(--text-dark);
 }
 
-/* ------------------------------
-   TABLE
---------------------------------*/
-.task-table {
-    margin-top: 30px;
-    background: white;
-    padding: 24px;
-    border-radius: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    overflow-x: auto; /* empêche débordement */
+/* =========================================
+   6. TABLES (Tasks & Roommates)
+   ========================================= */
+.task-table, #roommates-section table {
     width: 100%;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    overflow: hidden; /* Rounds the table corners */
+    border-collapse: collapse;
 }
 
 table {
     width: 100%;
-    border-collapse: collapse;
-}
-
-thead {
-    background: #F7F7F7;
-}
-
-th {
-    padding: 14px;
-    font-weight: 600;
-    color: #575757;
     text-align: left;
 }
 
-td {
-    padding: 16px;
-    border-bottom: 1px solid #E5E5E5;
-    color: #1E1E1E;
+thead {
+    background-color: #F8F9FA;
+    border-bottom: 2px solid var(--border-color);
 }
 
-/* ------------------------------
-   ADD TASK FORM
---------------------------------*/
-.add-task-section,
-.roommates-section,
-.map-section {
-    background: white;
-    padding: 24px;
-    border-radius: 16px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    margin-top: 30px;
+th {
+    padding: 15px 20px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: var(--text-grey);
+    font-weight: 700;
+}
+
+td {
+    padding: 15px 20px;
+    border-bottom: 1px solid #EEE;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+/* Status Badges (Generated by JS) */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge.Pending {
+    background-color: #FFF3CD;
+    color: #856404;
+}
+
+.status-badge.done {
+    background-color: #D4EDDA;
+    color: #155724;
+}
+
+/* Action Buttons in Table (Generated by JS) */
+.btn-action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    margin-right: 5px;
+    transition: opacity 0.2s;
+}
+
+.btn-action:hover {
+    opacity: 0.8;
+}
+
+.btn-done {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-delete, .btn-delete-roommate {
+    background-color: var(--white);
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+}
+
+.btn-delete:hover, .btn-delete-roommate:hover {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+/* =========================================
+   7. FORMS (Add Task & Roommates)
+   ========================================= */
+.add-task, .add-roommate-form {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    max-width: 600px;
+    margin: 0 auto; /* Center the form */
 }
 
 .form-group {
     margin-bottom: 20px;
 }
 
-input, textarea, select {
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Inputs, select, and textarea styles */
+.form-group input, 
+.form-group textarea, 
+.form-group select,
+.add-roommate-form input {
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #D6D6D6;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: var(--font-main);
+    transition: border 0.2s;
+}
+
+.form-group input:focus, 
+.form-group textarea:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Special case: Inline Roommate Form */
+.add-roommate-form .form-group-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 0;
 }
 
 .btn-submit {
-    background: #00A374;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--primary-color);
     color: white;
-    padding: 12px 20px;
-    border-radius: 12px;
     border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
 }
 
-/* ------------------------------
-   FOOTER
---------------------------------*/
+.btn-submit:hover {
+    background-color: #008C63;
+}
+
+/* =========================================
+   8. MAP SECTION (Crucial)
+   ========================================= */
+#map-section {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.map-container {
+    position: relative; /* Reference for bubbles */
+    width: 100%;
+    height: 600px;
+    background-color: #F8F9FA;
+    border: 2px solid #E9ECEF;
+    border-radius: 12px;
+    margin-top: 20px;
+    overflow: hidden;
+
+    /* Grid Paper Effect */
+    background-image: 
+        linear-gradient(#E5E5E5 1px, transparent 1px),
+        linear-gradient(90deg, #E5E5E5 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* The Bubbles (Generated by JS) */
+.room-marker {
+    position: absolute;
+    transform: translate(-50%, -50%); /* Perfect centering */
+    padding: 8px 16px;
+    border-radius: 50px;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: default;
+    transition: transform 0.2s;
+}
+
+.room-marker:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    z-index: 10;
+}
+
+/* Task Counter Badge */
+.task-count-badge {
+    background: var(--white);
+    color: var(--danger-color);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+/* Room Colors */
+.marker-blue { background-color: #3498db; }
+.marker-purple { background-color: #9b59b6; }
+.marker-orange { background-color: #f39c12; }
+.marker-green { background-color: #2ecc71; }
+
+/* =========================================
+   9. FOOTER
+   ========================================= */
 footer {
     text-align: center;
-    padding: 30px 0;
-    color: #575757;
+    padding: 40px 0;
+    color: var(--text-grey);
+    font-size: 0.9rem;
+}
+
+/* --- ROOMMATE HEADER --- */
+.roommates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.subtitle {
+    color: var(--text-grey);
+    font-size: 0.9rem;
+    margin-top: -15px; /* Pull closer to H2 */
+}
+
+/* --- BUTTONS (Black & White style from screenshot) --- */
+.btn-black {
+    background-color: #000;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.btn-white {
+    background-color: white;
+    color: #000;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* --- GRID LAYOUT --- */
+.roommates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive Grid */
+    gap: 20px;
+}
+
+/* --- THE CARD --- */
+.roommate-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    position: relative; /* For delete button positioning */
+}
+
+.card-avatar {
+    width: 50px;
+    height: 50px;
+    background-color: #6c5ce7; /* Purple default */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.card-info h4 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+.card-info .role {
+    font-size: 0.8rem;
+    color: var(--text-grey);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.card-info .email {
+    font-size: 0.85rem;
+    color: var(--text-grey);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Delete Icon (Small 'x' on the card) */
+.btn-delete-card {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+.btn-delete-card:hover { color: red; }
+
+/* --- MODAL STYLES --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5); /* Dimmed background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.required { color: red; }
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
 }
