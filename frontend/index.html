@@ -207,32 +207,44 @@
             </section>
 
             <section id="map-section" class="hidden-section">
-                <h2>House Map Overview</h2>
-                <p>Tasks per room are shown in the bubbles.</p>
-                
-                <div id="house-map" class="map-container">
+                <div class="roommates-header">
+                    <div class="header-text">
+                        <h2>Interactive Map</h2>
+                        <p class="subtitle">Click on a room to view tasks</p>
                     </div>
+                </div>
+
+                <div class="map-layout-container">
+                    
+                    <div id="house-map" class="map-canvas">
+                        </div>
+
+                    <div class="map-sidebar-panel">
+                        
+                        <div id="sidebar-placeholder" class="sidebar-state">
+                            <div class="empty-state-icon">📍</div>
+                            <h3>Select a Location</h3>
+                            <p>Click on a room bubble to see the tasks assigned to it.</p>
+                        </div>
+
+                        <div id="sidebar-details" class="sidebar-state hidden">
+                            <div class="sidebar-header">
+                                <h3 id="selected-room-name">Kitchen</h3>
+                                <button id="btn-close-sidebar" class="btn-icon">&times;</button>
+                            </div>
+                            
+                            <div id="selected-room-tasks" class="sidebar-task-list">
+                                </div>
+                        </div>
+
+                    </div>
+                </div>
             </section>
         </main>
 
         <footer>
             <p>&copy; 2026 DormMate. All rights reserved.</p>
         </footer>
-
-        <section id="map-section" class="hidden-section">
-    <div class="roommates-header"> <div class="header-text">
-            <h2>House Overview</h2>
-            <p class="subtitle">Visual representation of your dorm</p>
-        </div>
-        <div class="map-legend">
-            <span class="legend-item"><span class="dot-indicator bg-green"></span> Clean</span>
-            <span class="legend-item"><span class="dot-indicator bg-red"></span> Busy</span>
-        </div>
-    </div>
-
-    <div id="house-map" class="map-canvas">
-        </div>
-</section>
 
         <script src="main.js"></script>
     </body>
