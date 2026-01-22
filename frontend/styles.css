@@ -1,3 +1,4 @@
+
 /* =========================================
    1. RESET & VARIABLES
    ========================================= */
@@ -586,3 +587,123 @@ footer {
     gap: 10px;
     margin-top: 20px;
 }
+
+/* --- GLOBAL MAP LAYOUT --- */
+.map-layout-container {
+    display: grid;
+    grid-template-columns: 1fr 350px; /* 350px fixed sidebar */
+    gap: 20px;
+    height: 600px;
+    margin-top: 20px;
+}
+
+/* Mobile responsiveness: stack columns */
+@media (max-width: 900px) {
+    .map-layout-container {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    .map-canvas { height: 400px; }
+}
+
+/* --- MAP CANVAS --- */
+.map-canvas {
+    height: 100%; 
+    border-radius: 20px;
+    border: 1px solid #eee;
+    background-color: #F8F9FB;
+    position: relative;
+    overflow: hidden; /* Clips widgets at boundaries */
+    
+    /* Subtle dot grid pattern */
+    background-image: radial-gradient(#DDE1E6 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+}
+
+/* Active room widget state */
+.room-widget.active {
+    border: 2px solid var(--text-dark);
+    box-shadow: 0 0 0 4px rgba(0,0,0,0.1);
+    transform: translate(-50%, -60%);
+    z-index: 50;
+}
+
+/* --- SIDEBAR PANEL --- */
+.map-sidebar-panel {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #eee;
+    padding: 25px;
+    height: 100%;
+    overflow-y: auto; /* Enable scroll for long lists */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+
+.sidebar-state.hidden {
+    display: none;
+}
+
+/* --- STATE 1: SELECTION PLACEHOLDER --- */
+#sidebar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: var(--text-grey);
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* --- STATE 2: ROOM DETAILS --- */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-grey);
+}
+
+/* --- SIDEBAR TASK CARDS --- */
+.mini-task-card {
+    background: #F8F9FA;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.mini-task-card h4 {
+    margin: 0 0 5px 0;
+    font-size: 0.95rem;
+}
+
+.mini-task-info {
+    font-size: 0.8rem;
+    color: var(--text-grey);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Priority color coding */
+.mini-task-card.priority-High { border-left-color: var(--danger-color); }
+.mini-task-card.priority-Medium { border-left-color: #f39c12; }

@@ -298,30 +298,120 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // D. Render Map (The Bubbles!)
+    // --- GLOBAL MAP STATE ---
+    let selectedRoomId = null;
+
+    // Render widgets on the map
     function renderMap() {
-        mapContainer.innerHTML = ''; // Clear map
+        const mapContainer = document.getElementById('house-map');
+        mapContainer.innerHTML = ''; 
         
         rooms.forEach(room => {
-            // Count pending tasks for this room
-            const taskCount = tasks.filter(t => t.room_id === room.id && t.status !== 'done').length;
+            const pendingTasks = tasks.filter(t => t.room_id === room.id && t.status !== 'done');
+            const count = pendingTasks.length;
+            const isBusy = count > 0;
 
-            // Create Bubble
-            const bubble = document.createElement('div');
-            bubble.className = `room-marker marker-${room.color}`;
-            
-            // Positioning (from DB coordinates)
-            bubble.style.left = `${room.pos_x}px`;
-            bubble.style.top = `${room.pos_y}px`;
+            // Set color theme
+            let themeClass = 'theme-blue';
+            if (room.color === 'purple') themeClass = 'theme-purple';
+            if (room.color === 'orange') themeClass = 'theme-orange';
+            if (room.color === 'green') themeClass = 'theme-green';
 
-            // Content
-            bubble.innerHTML = `
-                <span>${room.name}</span>
-                ${taskCount > 0 ? `<div class="task-count-badge">${taskCount}</div>` : ''}
+            // Create widget element
+            const widget = document.createElement('div');
+            widget.className = `room-widget ${selectedRoomId === room.id ? 'active' : ''}`;
+            widget.style.left = `${room.pos_x}px`;
+            widget.style.top = `${room.pos_y}px`;
+
+            widget.innerHTML = `
+                <div class="status-dot ${isBusy ? 'bg-red' : 'bg-green'}"></div>
+                <div class="widget-header">
+                    <span class="widget-title">${room.name}</span>
+                    <div class="widget-icon ${themeClass}">
+                        ${room.name.charAt(0)}
+                    </div>
+                </div>
+                <div class="widget-body">
+                    ${isBusy 
+                        ? `<span class="task-pill urgent">${count} Tasks</span>` 
+                        : `<span class="task-pill">All Clean</span>`
+                    }
+                </div>
             `;
+            
+            // Handle widget click
+            widget.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent background click
+                selectRoom(room);
+            });
 
-            mapContainer.appendChild(bubble);
+            mapContainer.appendChild(widget);
         });
+    }
+
+    // --- SELECTION LOGIC ---
+
+    function selectRoom(room) {
+        selectedRoomId = room.id;
+        
+        // Refresh widgets visuals
+        document.querySelectorAll('.room-widget').forEach(w => w.classList.remove('active'));
+        renderMap(); 
+
+        // Switch sidebar states
+        const placeholder = document.getElementById('sidebar-placeholder');
+        const details = document.getElementById('sidebar-details');
+        
+        placeholder.classList.add('hidden');
+        details.classList.remove('hidden');
+
+        // Update sidebar content
+        document.getElementById('selected-room-name').textContent = room.name;
+        
+        const roomTasks = tasks.filter(t => t.room_id === room.id && t.status !== 'done');
+        const tasksContainer = document.getElementById('selected-room-tasks');
+        tasksContainer.innerHTML = '';
+
+        if (roomTasks.length === 0) {
+            tasksContainer.innerHTML = '<p style="color:#aaa; text-align:center;">No pending tasks here. Great job!</p>';
+        } else {
+            roomTasks.forEach(t => {
+                const assignee = roommates.find(r => r.id == t.roommate_id)?.name || 'Unassigned';
+                
+                const taskCard = document.createElement('div');
+                taskCard.className = `mini-task-card priority-${t.priority}`;
+                taskCard.innerHTML = `
+                    <h4>${t.title}</h4>
+                    <div class="mini-task-info">
+                        <span>👤 ${assignee}</span>
+                        <span>📅 ${t.due_date}</span>
+                    </div>
+                `;
+                tasksContainer.appendChild(taskCard);
+            });
+        }
+    }
+
+    // --- CLOSE SIDEBAR ---
+
+    // Handle close button click
+    const btnCloseSidebar = document.getElementById('btn-close-sidebar');
+    if(btnCloseSidebar) {
+        btnCloseSidebar.addEventListener('click', deselectRoom);
+    }
+
+    // Handle clicking empty map space
+    document.getElementById('house-map').addEventListener('click', () => {
+        deselectRoom();
+    });
+
+    // Reset selection and sidebar
+    function deselectRoom() {
+        selectedRoomId = null;
+        renderMap();
+
+        document.getElementById('sidebar-placeholder').classList.remove('hidden');
+        document.getElementById('sidebar-details').classList.add('hidden');
     }
 
     function updateStats(currentTasks) {
