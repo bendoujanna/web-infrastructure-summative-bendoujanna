@@ -82,6 +82,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function fetchRooms() {
+    try {
+        const res = await fetch(`${API_URL}/rooms`);
+        if (res.ok) {
+            rooms = await res.json();
+            // This line is what fills the dropdown!
+            populateRoomDropdown(); 
+            // This line draws the widgets on the map
+            renderMap(); 
+        }
+    } catch (error) {
+        console.error("Error fetching rooms:", error);
+    }
+}
+
     // B. Fetch Roommates
     async function fetchRoommates() {
         const res = await fetch(`${API_URL}/roommates`);
